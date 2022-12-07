@@ -8,18 +8,35 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
 
     [SerializeField] private float speed = 2f;
+    [SerializeField] private float currentSpeed;
     [SerializeField] private float rotateSpeed = 10f;
+    Quaternion oldRotate;
 
     void Start()
     {
         animator = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
+        oldRotate = transform.rotation;
+        currentSpeed = speed;
     }
 
     
     void Update()
     {
-        float oldVelocityY = rb.velocity.y;
+        if (Input.GetMouseButtonDown(0))
+        {
+            animator.Play("Sword attack");
+        }
+
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("Sword attack"))
+        {
+            currentSpeed = 0;
+        }
+        else
+        {
+            currentSpeed = speed;
+        }
+
         float hor = Input.GetAxis("Horizontal");
         float ver = Input.GetAxis("Vertical");
 
@@ -27,7 +44,18 @@ public class PlayerController : MonoBehaviour
         if (direction.magnitude > Mathf.Abs(0.05f)) transform.rotation = Quaternion.Lerp(transform.rotation, Quaternion.LookRotation(direction), rotateSpeed * Time.deltaTime);
 
         animator.SetFloat("moveSpeed", Vector3.ClampMagnitude(direction, 1).magnitude);
-        rb.velocity = Vector3.ClampMagnitude(direction, 1) * speed;
-        rb.velocity = new Vector3(rb.velocity.x, oldVelocityY, rb.velocity.z);
+
+        if (hor == 0 && ver == 0)
+        {
+            transform.rotation = oldRotate;
+        }
+
+        else
+        {
+            rb.velocity = Vector3.ClampMagnitude(direction, 1) * currentSpeed;
+        }
+
+        oldRotate = transform.rotation;
     }
 }
+
